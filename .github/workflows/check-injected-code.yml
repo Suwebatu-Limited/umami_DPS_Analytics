@@ -1,0 +1,26 @@
+name: Injected code check
+
+# Runs on pull requests as well as pushes, so a payload is caught before review
+# rather than at deploy time. The same check guards the build script, which is
+# what stops an infected commit reaching Vercel.
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  # Named for what it is, not "check", because ci.yml already has a job by that
+  # name. A required status check is matched by job name, so two jobs called
+  # "check" give you a rule that guards whichever one GitHub resolved and no way
+  # to tell which. That is not a thing to discover after trusting the rule.
+  injected-code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # No dependency install on purpose. The check reads files and nothing
+      # else, and installing packages is one of the ways this family runs.
+      - run: node scripts/check-injected-code.mjs
