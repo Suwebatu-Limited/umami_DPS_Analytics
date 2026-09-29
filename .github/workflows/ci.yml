@@ -3,7 +3,9 @@
 
 name: Node.js CI
 
-on: [push]
+on:
+  push:
+  pull_request:
 
 env:
   DATABASE_TYPE: postgresql
@@ -11,8 +13,10 @@ env:
 
 jobs:
   build:
-    # Only run the CI if it belongs to the original repository
-    if: github.repository == 'umami-software/umami'
+    # Fixed: this condition checked the upstream project's name
+    # (umami-software/umami), so it silently skipped on every run in this
+    # fork and the "CI" here has never actually executed.
+    if: github.repository == 'Suwebatu-Limited/umami_DPS_Analytics'
     runs-on: ubuntu-latest
 
     strategy:
@@ -42,3 +46,21 @@ jobs:
     - run: pnpm install
     - run: pnpm test
     - run: pnpm build
+
+  # Aggregates the build matrix into one status check the org-wide ruleset
+  # can require by name. if: always() so this still runs if build failed -
+  # a skipped required check reads as passing to GitHub, which would defeat
+  # the point.
+  ci-complete:
+    needs: [build]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every job above to have succeeded or been skipped on purpose
+        run: |
+          for result in "${{ needs.build.result }}"; do
+            if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
+              echo "::error::A required job did not succeed."
+              exit 1
+            fi
+          done
