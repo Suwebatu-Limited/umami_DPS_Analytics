@@ -1,10 +1,10 @@
 packages:
   - '**'
-ignoredBuiltDependencies:
-  - cypress
-  - esbuild
-  - sharp
 onlyBuiltDependencies:
   - '@prisma/client'
   - '@prisma/engines'
+  - cypress
+  - esbuild
   - prisma
+  - sharp
+  - unrs-resolver
