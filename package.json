@@ -65,17 +65,6 @@
   "cacheDirectories": [
     ".next/cache"
   ],
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/client",
-      "@prisma/engines",
-      "cypress",
-      "esbuild",
-      "prisma",
-      "sharp",
-      "unrs-resolver"
-    ]
-  },
   "dependencies": {
     "@clickhouse/client": "^1.10.1",
     "@date-fns/utc": "^1.2.0",
