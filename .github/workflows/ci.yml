@@ -60,14 +60,30 @@ jobs:
   # can require by name. if: always() so this still runs if build failed -
   # a skipped required check reads as passing to GitHub, which would defeat
   # the point.
-  ci-complete:
+  deploy:
     needs: [build]
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: Suwebatu-Limited/.github/.github/workflows/deploy.yml@main
+    with:
+      production: ${{ github.ref == 'refs/heads/master' }}
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      NEON_ORG_ID: ${{ secrets.NEON_ORG_ID }}
+      UMAMI_USERNAME: ${{ secrets.UMAMI_USERNAME }}
+      UMAMI_PASSWORD: ${{ secrets.UMAMI_PASSWORD }}
+
+  ci-complete:
+    needs: [build, deploy]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Require every job above to have succeeded or been skipped on purpose
         run: |
-          for result in "${{ needs.build.result }}"; do
+          for result in "${{ needs.build.result }}" "${{ needs.deploy.result }}"; do
             if [ "$result" != "success" ] && [ "$result" != "skipped" ]; then
               echo "::error::A required job did not succeed."
               exit 1
