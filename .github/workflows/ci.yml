@@ -42,7 +42,16 @@ jobs:
         cache: 'pnpm'
       env:
         DATABASE_TYPE: ${{ matrix.db-type }}
-    - run: npm install --global pnpm
+    # This used to be followed by `npm install --global pnpm`, with no
+    # version pin - that silently overrode the matrix's pnpm-version (10)
+    # with whatever npm currently resolves as "latest" (12.8.1 as of this
+    # fix), which is why every onlyBuiltDependencies/ignoredBuiltDependencies
+    # config change kept having zero effect: the pnpm version actually
+    # running the install was never the one being configured for. Confirmed
+    # live from the install log itself (content-addressable store format
+    # v11, not the v10 pnpm/action-setup actually provisions). The step
+    # pnpm/action-setup already does is the real version; nothing after it
+    # should reinstall pnpm.
     - run: pnpm install
     - run: pnpm test
     - run: pnpm build
